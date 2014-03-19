@@ -1,0 +1,101 @@
+rm(list = ls())
+gc()
+
+
+csv = "E:/analytics/analytics/projects/R/QKITCH.csv"
+csv = "E:/analytics/analytics/projects/R/store24.csv"
+
+
+Dataset <- read.table(csv, header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE)
+
+names(Dataset)
+points_to_identify=4
+
+##
+# Eliminating Points
+#
+
+#Profit.Regression.2 <- update(Profit.Regression, subset= rownames(Duncan) != "minister")
+#compareCoefs(Profit.Regression, Profit.Regression.2)
+
+##
+# Create Model
+#
+Profit.Regression <- lm(Profit ~ Competitors + Footfall + Population + 
+  Residential + SQRT.Crew.Tenure + SQRT.Manager.Tenure + Visibility + X24h, 
+  data=Dataset)
+summary(Profit.Regression)
+
+##
+# Analyse Model Subsets
+#
+library(leaps, pos=4)
+plot(regsubsets(Profit ~ Competitors + Footfall + Population + Residential 
+  + SQRT.Crew.Tenure + SQRT.Manager.Tenure + Visibility + X24h, data=Dataset, 
+  nbest=1, nvmax=9), scale='adjr2')
+
+##
+# Component + Residual Plots
+#
+
+crPlots(Profit.Regression, span=0.5)
+
+##
+# MARGINAL MODEL PLOTS
+#
+library("marginalmodelplots")
+marginalModelPlots(Profit.Regression)
+
+
+##
+# ADDED-VARIABLE PLOTS
+# http://www.uk.sagepub.com/upm-data/38503_Chapter6.pdf
+# The added-variable plot allows us to visualize the effect of each regressor after adjusting for all the other regressors in the model.
+# The added-variable plot has several interesting and useful properties:
+#  - The least-squares line on the added-variable plot for the regressor equal to the partial slope in the regression
+#  - Extreme values (marked) are unusual data points
+# 
+avPlots(Profit.Regression, id.n=points_to_identify/2, id.cex=0.6)
+
+##
+# Unusual Data
+# Unusual data in regression include outliers, high-leverage points, and in?uential observations
+####
+outlierTest(Profit.Regression)
+
+##
+# OUTLIERS AND quantile-comparison plot of STUDENTIZED RESIDUALS
+# Unusual data in regression include outliers, high-leverage points, and in?uential observations
+####
+qqPlot(Profit.Regression, simulate=TRUE, id.method="y", id.n=points_to_identify)
+
+##
+# INFLUENCE PLOT - UNUSUAL POINTS
+# LEVERAGE: HAT-VALUES, COOK'S DISTANCE, BONFERRONI P-VALUE
+# *** look for Bonferroni p-values much lesser than 1 ***
+####
+
+influenceIndexPlot(Profit.Regression, id.n=points_to_identify)
+
+#A bubble-plot, combining the display of Studentized residuals, hat-values, and Cook’s distances, with the areas of the circles proportional to Cook’s D
+influencePlot(Profit.Regression, id.n=points_to_identify)
+
+##
+# INDEPENDENT VARIABLE TRANSFORMATION
+# SEE: PAGE 305 / PDF PAGE 
+# http://www.uk.sagepub.com/upm-data/38503_Chapter6.pdf
+####
+
+## 01 - BOX-COX
+#plot_range <- seq(-2, 2, by=0.1)
+#boxCox(Profit.Regression, lambda = plot_range)
+#summary(p1 <- powerTransform(Profit.Regression))
+
+#Transformation
+
+#Dataset.01 <- transform(Dataset,y1=bcPower(Profit + 1, coef(p1)), y1round=bcPower(Profit + 1, coef(p1, round=TRUE)))
+#????Profit.Regression.T <- update(Profit.Regression, y1round ˜ .,data=Dataset.01)
+
+
+inverseResponsePlot(Profit.Regression, id.n=4)
+
