@@ -1,5 +1,6 @@
 
-setwc("/Users/ronaldo.pontes/projects/java/analytics/projects/R")
+## setwc("/Users/ronaldo.pontes/projects/java/analytics/projects/R")
+setwd("~/python/analytics/projects/R")
 
 ## Install RCommander and all necessary libraries
 install.packages("Rcmdr")
